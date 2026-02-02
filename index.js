@@ -1,35 +1,33 @@
-const express = require('express');
-const yts = require('yt-search');
-const app = express();
+const axios = require('axios');
 
-app.get('/api', async (req, res) => {
-    const query = req.query.q;
-    if (!query) return res.json({ status: false, error: "Judulnya mana sem?" });
+module.exports = async (req, res) => {
+  const query = req.query.q;
+  if (!query) return res.json({ status: "error", message: "Masukkan query!" });
 
-    try {
-        const search = await yts(query);
-        const vid = search.videos[0];
-        if (!vid) return res.json({ status: false, error: "Gak ketemu sem" });
+  try {
+    // 1. Cari video di YouTube
+    const searchUrl = `https://api.vreden.my.id/api/ytsearch?query=${encodeURIComponent(query)}`;
+    const searchRes = await axios.get(searchUrl);
+    const video = searchRes.data.result[0];
 
-        // Pakai website converter yang stabil buat hasil downloadnya
-        const dlLink = `https://www.y2mate.com/youtube/${vid.videoId}`;
+    if (!video) return res.json({ status: "error", message: "Video tidak ditemukan" });
 
-        res.json({
-            status: "success",
-            title: vid.title,
-            views: vid.views,
-            duration: vid.timestamp,
-            url_video: vid.url,
-            thumb: vid.thumbnail,
-            download_helper: dlLink // Klik link ini buat milih MP3/MP4
-        });
+    // 2. AMBIL LINK MP4 DIRECT (Paling Penting!)
+    const dlUrl = `https://api.vreden.my.id/api/ytdl?url=${video.url}`;
+    const dlRes = await axios.get(dlUrl);
+    const videoDirect = dlRes.data.result.mp4;
 
-    } catch (e) {
-        res.json({ status: false, error: e.message });
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Gaspol sem!`));
-
-module.exports = app;
+    // 3. Kirim data ke bot Go kamu
+    res.json({
+      status: "success",
+      title: video.title,
+      views: video.views,
+      duration: video.timestamp,
+      urlVideo: videoDirect, // Link ini yang bakal bikin video bisa di-play
+      thumb: video.thumbnail,
+      urlYoutube: video.url
+    });
+  } catch (e) {
+    res.json({ status: "error", message: e.message });
+  }
+};
