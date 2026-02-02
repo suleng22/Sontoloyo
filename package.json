@@ -1,11 +1,6 @@
 {
   "name": "sontoloyo-api",
   "version": "1.0.0",
-  "description": "API YouTube Search & Download for LINE Bot",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
   "dependencies": {
     "axios": "^1.6.0"
   }
