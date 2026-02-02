@@ -1,25 +1,58 @@
-const axios = require('axios');
+const axios = require("axios");
 
 module.exports = async (req, res) => {
   const query = req.query.q;
-  if (!query) return res.json({ status: "error", message: "Masukkan judul lagu sem!" });
+
+  if (!query) {
+    return res.json({
+      status: "error",
+      message: "Masukkan judul lagu!"
+    });
+  }
 
   try {
-    // 1. CARI INFO VIDEO
-    const search = await axios.get(`https://api.vreden.my.id/api/ytsearch?query=${encodeURIComponent(query)}`);
+    const search = await axios.get(
+      `https://api.vreden.my.id/api/ytsearch?query=${encodeURIComponent(query)}`
+    );
+
+    if (!search.data.result?.length) {
+      return res.json({
+        status: "error",
+        message: "Video tidak ditemukan"
+      });
+    }
+
     const video = search.data.result[0];
 
-    // 2. TUKAR LINK YT JADI FILE MP4 (Ini kuncinya agar bisa di-play)
-    const download = await axios.get(`https://api.vreden.my.id/api/ytdl?url=${video.url}`);
-    
-    // 3. KIRIM HASIL KE BOT
+    const download = await axios.get(
+      `https://api.vreden.my.id/api/ytdl?url=${video.url}`
+    );
+
+    if (!download.data.result?.mp4) {
+      return res.json({
+        status: "error",
+        message: "Link video tidak tersedia"
+      });
+    }
+
     res.json({
       status: "success",
-      title: video.title,
-      urlVideo: download.data.result.mp4, // <--- Link ini yang bisa diputar di LINE
-      thumb: video.thumbnail
+      result: {
+        title: video.title,
+        author: video.author?.name || "Unknown",
+        duration: video.duration || "-",
+        thumbnail: video.thumbnail,
+        youtube: video.url,
+        video: download.data.result.mp4
+      }
     });
+
   } catch (err) {
-    res.json({ status: "error", message: "Gagal ambil video sem" });
+    console.error(err);
+
+    res.json({
+      status: "error",
+      message: "Server error, coba lagi nanti"
+    });
   }
 };
