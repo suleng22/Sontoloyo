@@ -1,8 +1,11 @@
-{
-  "name": "sontoloyo",
-  "version": "1.0.0",
-  "main": "api/index.js",
-  "dependencies": {
-    "axios": "^1.6.0"
+res.json({
+  status: "success",
+  result: {
+    title: video.title,
+    author: video.author?.name || "Unknown",
+    duration: video.duration || "-",
+    thumbnail: video.thumbnail,
+    youtube: video.url,
+    video: download.data.result.mp4
   }
-}
+});
