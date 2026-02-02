@@ -1,31 +1,39 @@
 const express = require('express');
 const yts = require('yt-search');
-const ytdl = require('@distube/ytdl-core');
 const app = express();
 
 app.get('/api', async (req, res) => {
-    const query = req.query.q;
-    if (!query) return res.json({ error: "Judulnya mana sem?" });
+    // Menggunakan 'q' sesuai kodinganmu sebelumnya
+    const query = req.query.q; 
+    if (!query) return res.json({ status: false, error: "Judulnya mana sem?" });
 
     try {
+        // Cari video di YouTube
         const search = await yts(query);
         const vid = search.videos[0];
-        if (!vid) return res.json({ error: "Gak ketemu sem" });
+        
+        if (!vid) return res.json({ status: false, error: "Gak ketemu sem" });
 
-        const info = await ytdl.getInfo(vid.url);
-        // Format 18 = MP4 360p (paling stabil buat LINE)
-        const format = ytdl.chooseFormat(info.formats, { quality: '18' });
-
+        // Balas dengan data yang aman (pasti muncul)
         res.json({
             status: "success",
             title: vid.title,
-            url: format.url,
+            views: vid.views,
+            timestamp: vid.timestamp,
+            ago: vid.ago,
+            url: vid.url,
             thumb: vid.thumbnail
         });
+
     } catch (e) {
-        res.json({ error: e.message });
+        res.json({ status: false, error: e.message });
     }
 });
 
-app.listen(3000);
+// Sesuaikan port untuk Vercel
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server jalan di port ${PORT}`);
+});
+
 module.exports = app;
