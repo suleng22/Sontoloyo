@@ -2,29 +2,28 @@ const axios = require('axios');
 
 module.exports = async (req, res) => {
   const query = req.query.q;
-  if (!query) return res.json({ status: "error", message: "Masukkan judul lagu sem!" });
+  if (!query) return res.json({ status: "error", message: "Query kosong sem!" });
 
   try {
-    // 1. Cari video di YouTube
+    // 1. Cari video di YT
     const search = await axios.get(`https://api.vreden.my.id/api/ytsearch?query=${encodeURIComponent(query)}`);
     const video = search.data.result[0];
+    if (!video) return res.json({ status: "error", message: "Gak ketemu sem!" });
 
-    if (!video) return res.json({ status: "error", message: "Video gak ketemu sem!" });
-
-    // 2. Ambil Link Direct MP4 (Wajib agar bisa di-play di LINE)
+    // 2. AMBIL LINK MP4 DIRECT (Kunci agar bisa di-play)
     const dl = await axios.get(`https://api.vreden.my.id/api/ytdl?url=${video.url}`);
-    const linkMentah = dl.data.result.mp4;
+    const directLink = dl.data.result.mp4;
 
-    // 3. Kirim balik ke bot Go
+    // 3. Kirim balik ke Bot Go
     res.json({
       status: "success",
       title: video.title,
       views: video.views,
       duration: video.timestamp,
-      urlVideo: linkMentah, // Link ini yang akan diputar oleh fungsi VGede
+      urlVideo: directLink, // Sekarang isinya link .mp4 asli
       thumb: video.thumbnail
     });
   } catch (err) {
-    res.json({ status: "error", message: "API Vreden lagi down sem!" });
+    res.json({ status: "error", message: "API Vreden lagi pusing sem!" });
   }
 };
