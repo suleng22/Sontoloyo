@@ -28,13 +28,6 @@ module.exports = async (req, res) => {
       `https://api.vreden.my.id/api/ytdl?url=${video.url}`
     );
 
-    if (!download.data.result?.mp4) {
-      return res.json({
-        status: "error",
-        message: "Link video tidak tersedia"
-      });
-    }
-
     res.json({
       status: "success",
       result: {
@@ -43,7 +36,7 @@ module.exports = async (req, res) => {
         duration: video.duration || "-",
         thumbnail: video.thumbnail,
         youtube: video.url,
-        video: download.data.result.mp4
+        video: download.data.result?.mp4 || null
       }
     });
 
@@ -52,7 +45,7 @@ module.exports = async (req, res) => {
 
     res.json({
       status: "error",
-      message: "Server error, coba lagi nanti"
+      message: "Server error"
     });
   }
 };
