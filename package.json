@@ -1,11 +1,12 @@
-res.json({
-  status: "success",
-  result: {
-    title: video.title,
-    author: video.author?.name || "Unknown",
-    duration: video.duration || "-",
-    thumbnail: video.thumbnail,
-    youtube: video.url,
-    video: download.data.result.mp4
+{
+  "name": "sontoloyo-api",
+  "version": "1.0.0",
+  "description": "API YouTube Search & Download for LINE Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
   }
-});
+}
